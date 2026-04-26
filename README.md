@@ -1,6 +1,6 @@
 # Crypto Market Dashboard
 
-A high-performance, real-time cryptocurrency price tracker built with React, Tailwind CSS, and the CoinGecko API. Designed with a modern "AI-native" approach focusing on robust architecture, fluid UX, and deep API resilience.
+A high-performance cryptocurrency dashboard built with React, Tailwind CSS, and the CoinGecko API, focusing on real-time data handling, clean architecture, and responsive UI.
 
 ## Features & Implementation
 
