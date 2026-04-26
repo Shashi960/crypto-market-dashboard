@@ -1,4 +1,5 @@
 # Crypto Market Dashboard
+Live Demo: https://cryptocoininsight.vercel.app
 
 A high-performance cryptocurrency dashboard built with React, Tailwind CSS, and the CoinGecko API, focusing on real-time data handling, clean architecture, and responsive UI.
 
