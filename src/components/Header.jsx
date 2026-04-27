@@ -5,7 +5,7 @@ export default function Header({ darkMode, setDarkMode }) {
     <header className="sticky top-0 z-30 border-b border-gray-200 dark:border-gray-800 bg-white/95 dark:bg-[#0B0E14]/95 backdrop-blur px-6 py-4 flex justify-between items-center">
       <div className="flex items-center gap-2">
         <Activity className="w-6 h-6 text-blue-500" />
-        <span className="text-xl font-bold tracking-tight">CryptoTracker</span>
+        <span className="text-xl font-bold tracking-tight">CoinVoyage</span>
       </div>
       <button 
         onClick={() => setDarkMode(!darkMode)}
