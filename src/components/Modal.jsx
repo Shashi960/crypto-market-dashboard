@@ -1,5 +1,6 @@
 import { X, Info, TrendingUp, TrendingDown } from "lucide-react";
 import { formatMarketCap } from "../utils/formatters";
+import { LineChart, Line, ResponsiveContainer, YAxis } from "recharts";
 
 export default function Modal({ selectedCoin, setSelectedCoin }) {
   if (!selectedCoin) return null;
@@ -60,6 +61,31 @@ export default function Modal({ selectedCoin, setSelectedCoin }) {
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-500 dark:text-gray-400">24h Low</span>
                 <span className="font-semibold text-red-500">${selectedCoin.low_24h?.toLocaleString() || "N/A"}</span>
+              </div>
+            </div>
+
+            <div className="sm:col-span-2 bg-gray-50 dark:bg-gray-800/50 rounded-xl p-5 border border-gray-200 dark:border-gray-700">
+              <p className="text-sm text-gray-500 dark:text-gray-400 font-medium mb-4">7-Day Price Trend</p>
+              <div className="h-40 w-full">
+                {selectedCoin.sparkline_in_7d?.price?.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={selectedCoin.sparkline_in_7d.price.map((price, index) => ({ index, price }))}>
+                      <YAxis domain={['dataMin', 'dataMax']} hide />
+                      <Line 
+                        type="monotone" 
+                        dataKey="price" 
+                        stroke={selectedCoin.price_change_percentage_24h >= 0 ? "#22c55e" : "#ef4444"} 
+                        strokeWidth={2} 
+                        dot={false} 
+                        isAnimationActive={false}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="h-full flex items-center justify-center text-sm text-gray-500">
+                    No trend data available
+                  </div>
+                )}
               </div>
             </div>
 
