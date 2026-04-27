@@ -22,7 +22,7 @@ function App() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const [globalData, setGlobalData] = useState(null);
-  const [nextUpdateProgress, setNextUpdateProgress] = useState(0);
+  const [timeUntilUpdate, setTimeUntilUpdate] = useState(60);
 
   const getData = async (isInitial = false) => {
     if (isInitial) setLoading(true);
@@ -38,7 +38,7 @@ function App() {
       }
       setError(null);
       setLastUpdated(new Date());
-      setNextUpdateProgress(0);
+      setTimeUntilUpdate(60);
     } catch (err) {
       console.error(err);
       setError("Failed to fetch data");
@@ -51,13 +51,13 @@ function App() {
     getData(true);
 
     const interval = setInterval(() => getData(false), 60000);
-    const progressInterval = setInterval(() => {
-      setNextUpdateProgress((prev) => Math.min(prev + (100 / 60), 100));
+    const countdownInterval = setInterval(() => {
+      setTimeUntilUpdate((prev) => Math.max(prev - 1, 0));
     }, 1000);
 
     return () => {
       clearInterval(interval);
-      clearInterval(progressInterval);
+      clearInterval(countdownInterval);
     };
   }, []);
 
@@ -166,7 +166,7 @@ function App() {
           <SearchBar 
             search={search} 
             setSearch={setSearch} 
-            nextUpdateProgress={nextUpdateProgress} 
+            timeUntilUpdate={timeUntilUpdate} 
             onRefresh={() => getData(true)} 
           />
 
