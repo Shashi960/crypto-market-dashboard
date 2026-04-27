@@ -1,6 +1,19 @@
 import { X, Info, TrendingUp, TrendingDown } from "lucide-react";
 import { formatMarketCap } from "../utils/formatters";
-import { LineChart, Line, ResponsiveContainer, YAxis } from "recharts";
+import { LineChart, Line, ResponsiveContainer, YAxis, Tooltip } from "recharts";
+
+const CustomTooltip = ({ active, payload }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white dark:bg-gray-800 p-2 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
+        <p className="text-sm font-bold text-gray-900 dark:text-gray-100">
+          ${payload[0].value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}
+        </p>
+      </div>
+    );
+  }
+  return null;
+};
 
 export default function Modal({ selectedCoin, setSelectedCoin }) {
   if (!selectedCoin) return null;
@@ -12,10 +25,10 @@ export default function Modal({ selectedCoin, setSelectedCoin }) {
         onClick={() => setSelectedCoin(null)} 
       />
       
-      <div className="relative w-full max-w-2xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-2xl rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden animate-in fade-in zoom-in duration-200">
+      <div className="relative w-full max-w-2xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto overflow-x-hidden bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-2xl rounded-2xl border border-gray-200 dark:border-gray-700 animate-in fade-in zoom-in duration-200">
         <button
           onClick={() => setSelectedCoin(null)}
-          className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors focus:outline-none"
+          className="absolute z-10 top-3 right-3 sm:top-4 sm:right-4 p-2 rounded-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors focus:outline-none"
         >
           <X className="w-5 h-5 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors" />
         </button>
@@ -71,6 +84,10 @@ export default function Modal({ selectedCoin, setSelectedCoin }) {
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={selectedCoin.sparkline_in_7d.price.map((price, index) => ({ index, price }))}>
                       <YAxis domain={['dataMin', 'dataMax']} hide />
+                      <Tooltip 
+                        content={<CustomTooltip />} 
+                        cursor={{ stroke: '#9ca3af', strokeWidth: 1, strokeDasharray: '4 4' }} 
+                      />
                       <Line 
                         type="monotone" 
                         dataKey="price" 
