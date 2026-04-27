@@ -7,7 +7,7 @@ export default function Header({ darkMode, setDarkMode }) {
         <Activity className="w-6 h-6 text-blue-500" />
         <span className="text-xl font-bold tracking-tight">CoinVoyage</span>
       </div>
-      <button 
+      <button
         onClick={() => setDarkMode(!darkMode)}
         className="p-2 rounded-full border border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
       >
