@@ -129,7 +129,17 @@ function App() {
   }
 
   if (error) {
-    return <p className="p-6 text-red-500">{error}</p>;
+    return (
+      <div className={`min-h-screen flex flex-col items-center justify-center ${darkMode ? "dark bg-[#0B0E14]" : "bg-gray-50"}`}>
+        <p className="p-6 text-red-500 text-lg font-semibold">{error}</p>
+        <button
+          onClick={() => getData(true)}
+          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm"
+        >
+          Retry
+        </button>
+      </div>
+    );
   }
 
   return (
