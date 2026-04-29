@@ -32,7 +32,9 @@ export default function CoinTable({
   totalCoins,
   itemsPerPage,
   selectedCoin,
-  setSelectedCoin
+  setSelectedCoin,
+  favorites,
+  toggleFavorite
 }) {
   if (totalCoins === 0) {
     return (
@@ -48,6 +50,7 @@ export default function CoinTable({
         <table className="w-full">
           <thead className="bg-gray-50 dark:bg-[#1A1F2E] border-b border-gray-200 dark:border-gray-800">
             <tr className="text-left text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold">
+              <th className="p-3 w-10"></th>
               <SortHeader label="#" sortKey="market_cap_rank" sortConfig={sortConfig} handleSort={handleSort} />
               <SortHeader label="Coin" sortKey="name" sortConfig={sortConfig} handleSort={handleSort} />
               <SortHeader label="Price" sortKey="current_price" align="right" sortConfig={sortConfig} handleSort={handleSort} />
@@ -66,6 +69,8 @@ export default function CoinTable({
                 itemsPerPage={itemsPerPage}
                 selectedCoin={selectedCoin}
                 setSelectedCoin={setSelectedCoin}
+                isFavorite={favorites.includes(coin.id)}
+                toggleFavorite={toggleFavorite}
               />
             ))}
           </tbody>

@@ -23,6 +23,14 @@ function App() {
   const itemsPerPage = 10;
   const [globalData, setGlobalData] = useState(null);
   const [timeUntilUpdate, setTimeUntilUpdate] = useState(60);
+  const [favorites, setFavorites] = useState(() => {
+    try {
+      const item = localStorage.getItem("favorites");
+      return item ? JSON.parse(item) : [];
+    } catch (e) {
+      return [];
+    }
+  });
 
   const getData = async (isInitial = false) => {
     if (isInitial) setLoading(true);
@@ -71,6 +79,19 @@ function App() {
     }
   }, [darkMode]);
 
+  useEffect(() => {
+    localStorage.setItem("favorites", JSON.stringify(favorites));
+  }, [favorites]);
+
+  const toggleFavorite = (coinId, e) => {
+    if (e) e.stopPropagation();
+    setFavorites((prev) => 
+      prev.includes(coinId) 
+        ? prev.filter(id => id !== coinId)
+        : [...prev, coinId]
+    );
+  };
+
   const filteredCoins = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return coins;
@@ -93,6 +114,13 @@ function App() {
     let sortableCoins = [...filteredCoins];
     if (sortConfig !== null) {
       sortableCoins.sort((a, b) => {
+        const aFav = favorites.includes(a.id);
+        const bFav = favorites.includes(b.id);
+        
+        // Always show favorites on top
+        if (aFav && !bFav) return -1;
+        if (!aFav && bFav) return 1;
+
         let aValue = a[sortConfig.key];
         let bValue = b[sortConfig.key];
         
@@ -112,7 +140,7 @@ function App() {
       });
     }
     return sortableCoins;
-  }, [filteredCoins, sortConfig]);
+  }, [filteredCoins, sortConfig, favorites]);
 
   const totalPages = Math.ceil(sortedCoins.length / itemsPerPage);
   const paginatedCoins = useMemo(() => {
@@ -186,6 +214,8 @@ function App() {
             itemsPerPage={itemsPerPage}
             selectedCoin={selectedCoin}
             setSelectedCoin={setSelectedCoin}
+            favorites={favorites}
+            toggleFavorite={toggleFavorite}
           />
         </main>
       </div>

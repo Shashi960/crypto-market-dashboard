@@ -1,6 +1,7 @@
+import { Star } from "lucide-react";
 import { formatMarketCap } from "../utils/formatters";
 
-export default function CoinRow({ coin, index, currentPage, itemsPerPage, selectedCoin, setSelectedCoin }) {
+export default function CoinRow({ coin, index, currentPage, itemsPerPage, selectedCoin, setSelectedCoin, isFavorite, toggleFavorite }) {
   const price = coin.current_price ?? 0;
   const marketCap = coin.market_cap ?? 0;
   const volume = coin.total_volume ?? 0;
@@ -17,6 +18,21 @@ export default function CoinRow({ coin, index, currentPage, itemsPerPage, select
           : "hover:bg-gray-50 dark:hover:bg-gray-700/70"
       }`}
     >
+      <td className="p-3">
+        <button
+          onClick={(e) => toggleFavorite(coin.id, e)}
+          className="focus:outline-none hover:scale-110 transition-transform"
+          aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+        >
+          <Star
+            className={`w-5 h-5 ${
+              isFavorite
+                ? "text-yellow-400 fill-yellow-400"
+                : "text-gray-300 dark:text-gray-600 hover:text-yellow-400 dark:hover:text-yellow-400"
+            }`}
+          />
+        </button>
+      </td>
       <td className="p-3 text-gray-500 dark:text-gray-400 text-sm whitespace-nowrap">
         {rank}
       </td>
