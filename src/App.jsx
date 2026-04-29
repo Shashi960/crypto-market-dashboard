@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { fetchCoins, fetchGlobalStats } from "./services/api";
+import { fetchCoins, fetchGlobalStats, fetchTrendingMarketData } from "./services/api";
+import { History, Link2 } from "lucide-react";
 
 import Header from "./components/Header";
 import GlobalStats from "./components/GlobalStats";
@@ -7,9 +8,11 @@ import SearchBar from "./components/SearchBar";
 import CoinTable from "./components/CoinTable";
 import Modal from "./components/Modal";
 import SkeletonLoader from "./components/SkeletonLoader";
+import ToolsView from "./components/ToolsView";
 
 function App() {
   const [coins, setCoins] = useState([]);
+  const [trendingCoinsData, setTrendingCoinsData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [search, setSearch] = useState("");
@@ -20,7 +23,9 @@ function App() {
   );
   const [sortConfig, setSortConfig] = useState({ key: "market_cap", direction: "desc" });
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const [currentTab, setCurrentTab] = useState("market");
+  const [currency, setCurrency] = useState("USD");
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [globalData, setGlobalData] = useState(null);
   const [timeUntilUpdate, setTimeUntilUpdate] = useState(60);
   const [favorites, setFavorites] = useState(() => {
@@ -36,11 +41,13 @@ function App() {
     if (isInitial) setLoading(true);
 
     try {
-      const [coinsData, globalStats] = await Promise.all([
-        fetchCoins(),
-        fetchGlobalStats().catch(() => null)
+      const [coinsData, globalStats, trendingData] = await Promise.all([
+        fetchCoins(currency),
+        fetchGlobalStats().catch(() => null),
+        fetchTrendingMarketData(currency).catch(() => [])
       ]);
       setCoins(coinsData);
+      setTrendingCoinsData(trendingData || []);
       if (globalStats && globalStats.data) {
         setGlobalData(globalStats.data);
       }
@@ -67,7 +74,7 @@ function App() {
       clearInterval(interval);
       clearInterval(countdownInterval);
     };
-  }, []);
+  }, [currency]);
 
   useEffect(() => {
     if (darkMode) {
@@ -83,6 +90,14 @@ function App() {
     localStorage.setItem("favorites", JSON.stringify(favorites));
   }, [favorites]);
 
+  useEffect(() => {
+    if (currentTab === "trending") {
+      setSortConfig(null);
+    } else {
+      setSortConfig({ key: "market_cap", direction: "desc" });
+    }
+  }, [currentTab]);
+
   const toggleFavorite = (coinId, e) => {
     if (e) e.stopPropagation();
     setFavorites((prev) => 
@@ -93,18 +108,25 @@ function App() {
   };
 
   const filteredCoins = useMemo(() => {
+    let list = coins;
+    if (currentTab === "watchlist") {
+      list = list.filter(c => favorites.includes(c.id));
+    } else if (currentTab === "trending") {
+      list = trendingCoinsData.length > 0 ? trendingCoinsData : coins;
+    }
+    
     const q = search.trim().toLowerCase();
-    if (!q) return coins;
+    if (!q) return list;
 
-    return coins.filter((coin) =>
+    return list.filter((coin) =>
       coin.name?.toLowerCase().includes(q) ||
       coin.symbol?.toLowerCase().includes(q)
     );
-  }, [coins, search]);
+  }, [coins, search, currentTab, favorites]);
 
   const handleSort = (key) => {
     let direction = "asc";
-    if (sortConfig.key === key && sortConfig.direction === "asc") {
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === "asc") {
       direction = "desc";
     }
     setSortConfig({ key, direction });
@@ -146,11 +168,11 @@ function App() {
   const paginatedCoins = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
     return sortedCoins.slice(start, start + itemsPerPage);
-  }, [sortedCoins, currentPage]);
+  }, [sortedCoins, currentPage, itemsPerPage]);
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [search, coins]);
+  }, [search, coins, currentTab, itemsPerPage]);
 
   if (loading && coins.length === 0) {
     return <SkeletonLoader darkMode={darkMode} />;
@@ -172,55 +194,97 @@ function App() {
 
   return (
     <div className={`min-h-screen transition-colors ${darkMode ? "dark" : ""}`}>
-      <div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-[#0B0E14] dark:text-white font-sans">
-        <Header darkMode={darkMode} setDarkMode={setDarkMode} />
+      <div className="min-h-screen flex flex-col bg-gray-50 text-gray-900 dark:bg-[#0B0E14] dark:text-white font-sans">
+        <Header 
+          darkMode={darkMode} 
+          setDarkMode={setDarkMode} 
+          currency={currency} 
+          setCurrency={setCurrency} 
+          currentTab={currentTab}
+          setCurrentTab={setCurrentTab}
+          favoritesCount={favorites.length}
+        />
 
-        <main className="max-w-7xl mx-auto px-6 py-8">
-          {lastUpdated && (
-            <div className="flex justify-end mb-4">
-              <span className="text-sm text-gray-500 dark:text-gray-400">
-                Last updated: {lastUpdated.toLocaleTimeString("en-US", {
+        <main className="flex-grow w-full px-4 sm:px-6 lg:px-8 py-8">
+          {lastUpdated && currentTab === "market" && (
+            <div className="flex justify-end mb-2 items-center gap-4">
+              <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
+                <History className="w-3.5 h-3.5" />
+                <span>Last updated: {lastUpdated.toLocaleTimeString("en-US", {
                   hour: "numeric",
                   minute: "2-digit",
                   second: "2-digit",
                   hour12: true,
-                })}
-              </span>
+                })}</span>
+              </div>
+              <button className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors focus:outline-none">
+                <Link2 className="w-3.5 h-3.5" />
+              </button>
             </div>
           )}
 
-          <GlobalStats globalData={globalData} />
+          {currentTab === "tools" ? (
+            <ToolsView coins={coins} currency={currency} />
+          ) : (
+            <>
+              {currentTab === "market" && (
+                <GlobalStats globalData={globalData} currency={currency} />
+              )}
 
-          <SearchBar 
-            search={search} 
-            setSearch={setSearch} 
-            timeUntilUpdate={timeUntilUpdate} 
-            onRefresh={() => getData(true)} 
-          />
+              <SearchBar 
+                search={search} 
+                setSearch={setSearch} 
+                timeUntilUpdate={timeUntilUpdate} 
+                onRefresh={() => getData(true)} 
+              />
 
-          <div className="mb-6">
-            <h2 className="text-2xl font-bold mb-1">Market Overview</h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Top cryptocurrencies by market capitalization</p>
-          </div>
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold mb-1">
+                  {currentTab === "watchlist" ? "Your Watchlist" : currentTab === "trending" ? "Trending Coins" : "Market Overview"}
+                </h2>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  {currentTab === "watchlist" 
+                    ? "Cryptocurrencies you are tracking" 
+                    : currentTab === "trending" ? "Top cryptocurrencies gaining momentum" : "Top cryptocurrencies by market capitalization"}
+                </p>
+              </div>
 
-          <CoinTable 
-            paginatedCoins={paginatedCoins}
-            sortConfig={sortConfig}
-            handleSort={handleSort}
-            currentPage={currentPage}
-            setCurrentPage={setCurrentPage}
-            totalPages={totalPages}
-            totalCoins={sortedCoins.length}
-            itemsPerPage={itemsPerPage}
-            selectedCoin={selectedCoin}
-            setSelectedCoin={setSelectedCoin}
-            favorites={favorites}
-            toggleFavorite={toggleFavorite}
-          />
+              <CoinTable 
+                paginatedCoins={paginatedCoins}
+                sortConfig={sortConfig}
+                handleSort={handleSort}
+                currentPage={currentPage}
+                setCurrentPage={setCurrentPage}
+                totalPages={totalPages}
+                totalCoins={sortedCoins.length}
+                itemsPerPage={itemsPerPage}
+                setItemsPerPage={setItemsPerPage}
+                selectedCoin={selectedCoin}
+                setSelectedCoin={setSelectedCoin}
+                favorites={favorites}
+                toggleFavorite={toggleFavorite}
+                currency={currency}
+              />
+            </>
+          )}
         </main>
+
+        <footer className="w-full py-6 text-center border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-[#0B0E14]">
+          <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center justify-center gap-2">
+            Data provided by 
+            <a 
+              href="https://www.coingecko.com/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="font-semibold text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+            >
+              CoinGecko API
+            </a>
+          </p>
+        </footer>
       </div>
 
-      <Modal selectedCoin={selectedCoin} setSelectedCoin={setSelectedCoin} />
+      <Modal selectedCoin={selectedCoin} setSelectedCoin={setSelectedCoin} currency={currency} />
     </div>
   );
 }

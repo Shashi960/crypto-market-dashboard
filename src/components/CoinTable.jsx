@@ -2,7 +2,7 @@ import { ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight } from "luci
 import CoinRow from "./CoinRow";
 
 const SortHeader = ({ label, sortKey, align = "left", sortConfig, handleSort }) => {
-  const isActive = sortConfig.key === sortKey;
+  const isActive = sortConfig && sortConfig.key === sortKey;
   return (
     <th 
       className={`p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors select-none whitespace-nowrap ${align === "right" ? "text-right" : "text-left"}`}
@@ -31,10 +31,12 @@ export default function CoinTable({
   totalPages,
   totalCoins,
   itemsPerPage,
+  setItemsPerPage,
   selectedCoin,
   setSelectedCoin,
   favorites,
-  toggleFavorite
+  toggleFavorite,
+  currency
 }) {
   if (totalCoins === 0) {
     return (
@@ -46,17 +48,18 @@ export default function CoinTable({
 
   return (
     <div className="bg-white dark:bg-[#131722] rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800">
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead className="bg-gray-50 dark:bg-[#1A1F2E] border-b border-gray-200 dark:border-gray-800">
+      <div className="overflow-x-auto overflow-y-auto max-h-[65vh]">
+        <table className="w-full relative">
+          <thead className="bg-gray-50 dark:bg-[#1A1F2E] border-b border-gray-200 dark:border-gray-800 sticky top-0 z-20 shadow-sm backdrop-blur">
             <tr className="text-left text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold">
               <th className="p-3 w-10"></th>
               <SortHeader label="#" sortKey="market_cap_rank" sortConfig={sortConfig} handleSort={handleSort} />
               <SortHeader label="Coin" sortKey="name" sortConfig={sortConfig} handleSort={handleSort} />
               <SortHeader label="Price" sortKey="current_price" align="right" sortConfig={sortConfig} handleSort={handleSort} />
-              <SortHeader label="24h Change" sortKey="price_change_percentage_24h" align="right" sortConfig={sortConfig} handleSort={handleSort} />
+              <SortHeader label="24H" sortKey="price_change_percentage_24h" align="right" sortConfig={sortConfig} handleSort={handleSort} />
+              <SortHeader label="24H Volume" sortKey="total_volume" align="right" sortConfig={sortConfig} handleSort={handleSort} />
               <SortHeader label="Market Cap" sortKey="market_cap" align="right" sortConfig={sortConfig} handleSort={handleSort} />
-              <SortHeader label="Volume (24h)" sortKey="total_volume" align="right" sortConfig={sortConfig} handleSort={handleSort} />
+              <th className="p-3 text-right whitespace-nowrap">Last 7 Days</th>
             </tr>
           </thead>
           <tbody>
@@ -71,6 +74,7 @@ export default function CoinTable({
                 setSelectedCoin={setSelectedCoin}
                 isFavorite={favorites.includes(coin.id)}
                 toggleFavorite={toggleFavorite}
+                currency={currency}
               />
             ))}
           </tbody>
@@ -78,10 +82,32 @@ export default function CoinTable({
       </div>
       
       {/* Pagination Controls */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
-          <div className="text-sm text-gray-500 dark:text-gray-400">
-            Showing {(currentPage - 1) * itemsPerPage + 1}-{Math.min(currentPage * itemsPerPage, totalCoins)} of {totalCoins}
+      {totalPages > 0 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 gap-4 sm:gap-0">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-500 dark:text-gray-400">Rows</span>
+              <div className="relative">
+                <select
+                  value={itemsPerPage}
+                  onChange={(e) => {
+                    setItemsPerPage(Number(e.target.value));
+                    setCurrentPage(1);
+                  }}
+                  className="appearance-none bg-white dark:bg-[#0B0E14] border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 py-1 pl-3 pr-8 rounded-md outline-none focus:ring-2 focus:ring-blue-500 text-sm cursor-pointer"
+                >
+                  {[10, 20, 50, 100].map(n => (
+                    <option key={n} value={n}>{n}</option>
+                  ))}
+                </select>
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
+                  <ArrowDown className="w-3 h-3 text-gray-500" />
+                </div>
+              </div>
+            </div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">
+              Showing {(currentPage - 1) * itemsPerPage + 1}-{Math.min(currentPage * itemsPerPage, totalCoins)} of {totalCoins} results
+            </div>
           </div>
           <div className="flex items-center gap-1">
             <button
