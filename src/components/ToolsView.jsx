@@ -1,6 +1,7 @@
-import { ArrowRightLeft, Calculator, Receipt, TrendingUp, ChevronDown, Search, ChevronRight } from "lucide-react";
+import { ArrowRightLeft, Calculator, Receipt, TrendingUp, ChevronDown, Search, ChevronRight, Info } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { getCurrencySymbol } from "../utils/formatters";
+import { AnimatePresence, motion } from "framer-motion";
 
 function CustomSelect({ coins, value, onChange, label }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -162,6 +163,7 @@ export default function ToolsView({ coins, currency }) {
       const totalTax = tds + capitalGainsTax;
       return {
         profit: profit.toFixed(2),
+        netProfit: (profit - totalTax).toFixed(2),
         tax: totalTax.toFixed(2),
         breakdown: `30% Tax: $${capitalGainsTax.toFixed(2)} + 1% TDS: $${tds.toFixed(2)}`
       };
@@ -170,6 +172,7 @@ export default function ToolsView({ coins, currency }) {
       const tax = profit > 0 ? profit * (rate / 100) : 0;
       return {
         profit: profit.toFixed(2),
+        netProfit: (profit - tax).toFixed(2),
         tax: tax.toFixed(2),
         breakdown: `${rate}% Tax: $${tax.toFixed(2)}`
       };
@@ -184,8 +187,9 @@ export default function ToolsView({ coins, currency }) {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+        
         {/* Converter Tool */}
-        <div className="bg-white dark:bg-[#131722] rounded-xl p-6 border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col h-full">
+        <div className="bg-white dark:bg-[#131722] rounded-xl p-6 border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col">
           <div className="flex items-center gap-3 mb-6">
             <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-blue-500">
               <ArrowRightLeft className="w-6 h-6" />
@@ -193,7 +197,7 @@ export default function ToolsView({ coins, currency }) {
             <h3 className="text-xl font-semibold">Coin Converter</h3>
           </div>
 
-          <div className="space-y-4 flex-grow">
+          <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Amount</label>
               <input 
@@ -243,8 +247,8 @@ export default function ToolsView({ coins, currency }) {
         <div className="grid grid-cols-1 gap-4">
           
           {/* Impermanent Loss Calculator */}
-          <div className={`bg-white dark:bg-[#131722] rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm transition-all overflow-hidden ${activeTool === 'il' ? 'ring-1 ring-purple-500' : 'hover:border-purple-500/50'}`}>
-            <div 
+          <motion.div layout className={`bg-white dark:bg-[#131722] rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm transition-all overflow-hidden ${activeTool === 'il' ? 'ring-1 ring-purple-500' : 'hover:border-purple-500/50'}`}>
+            <motion.div layout="position"
               className="p-6 flex items-start gap-4 cursor-pointer"
               onClick={() => setActiveTool(activeTool === 'il' ? null : 'il')}
             >
@@ -258,53 +262,74 @@ export default function ToolsView({ coins, currency }) {
                 </h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Estimate potential losses when providing liquidity to AMMs.</p>
               </div>
-            </div>
+            </motion.div>
             
-            {activeTool === 'il' && (
-              <div className="p-6 pt-0 border-t border-gray-100 dark:border-gray-800">
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1">Initial Price Token A</label>
-                    <input type="number" value={ilTokenAInitial} onChange={e => setIlTokenAInitial(e.target.value)} className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 outline-none focus:ring-1 focus:ring-purple-500" />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1">Initial Price Token B</label>
-                    <input type="number" value={ilTokenBInitial} onChange={e => setIlTokenBInitial(e.target.value)} className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 outline-none focus:ring-1 focus:ring-purple-500" />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1">Final Price Token A</label>
-                    <input type="number" value={ilTokenAFinal} onChange={e => setIlTokenAFinal(e.target.value)} className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 outline-none focus:ring-1 focus:ring-purple-500" />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1">Final Price Token B</label>
-                    <input type="number" value={ilTokenBFinal} onChange={e => setIlTokenBFinal(e.target.value)} className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 outline-none focus:ring-1 focus:ring-purple-500" />
-                  </div>
-                </div>
-                <div className="bg-purple-50 dark:bg-purple-900/10 p-4 rounded-lg border border-purple-100 dark:border-purple-900/30">
-                  <div className="flex justify-between items-center mb-4 pb-4 border-b border-purple-200/50 dark:border-purple-800/50">
-                    <div>
-                      <p className="text-sm text-purple-600 dark:text-purple-400 font-medium mb-1">Impermanent Loss</p>
-                      <p className="text-2xl font-bold text-red-500">{calculateIL().ilPct}%</p>
+            <AnimatePresence initial={false}>
+              {activeTool === 'il' && (
+                <motion.div 
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="overflow-hidden"
+                >
+                  <div className="p-6 pt-0 border-t border-gray-100 dark:border-gray-800">
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                      <div>
+                        <label className="block text-xs text-gray-500 mb-1">Initial Price Token A</label>
+                        <input type="number" value={ilTokenAInitial} onChange={e => setIlTokenAInitial(e.target.value)} className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 outline-none focus:ring-1 focus:ring-purple-500" />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-gray-500 mb-1">Initial Price Token B</label>
+                        <input type="number" value={ilTokenBInitial} onChange={e => setIlTokenBInitial(e.target.value)} className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 outline-none focus:ring-1 focus:ring-purple-500" />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-gray-500 mb-1">Final Price Token A</label>
+                        <input type="number" value={ilTokenAFinal} onChange={e => setIlTokenAFinal(e.target.value)} className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 outline-none focus:ring-1 focus:ring-purple-500" />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-gray-500 mb-1">Final Price Token B</label>
+                        <input type="number" value={ilTokenBFinal} onChange={e => setIlTokenBFinal(e.target.value)} className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 outline-none focus:ring-1 focus:ring-purple-500" />
+                      </div>
+                    </div>
+                    <div className="bg-purple-50 dark:bg-purple-900/10 p-4 rounded-lg border border-purple-100 dark:border-purple-900/30">
+                      <div className="flex justify-between items-center mb-4 pb-4 border-b border-purple-200/50 dark:border-purple-800/50">
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <p className="text-sm text-purple-600 dark:text-purple-400 font-medium">Impermanent Loss</p>
+                            <div className="group relative">
+                              <Info className="w-4 h-4 text-purple-400 cursor-help" />
+                              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 p-3 bg-gray-900 text-white text-xs rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 pointer-events-none">
+                                <p className="font-semibold mb-2 border-b border-gray-700 pb-1">How calculated?</p>
+                                <p className="font-mono text-[10px] text-gray-300">r = (Final Price Ratio) / (Initial Price Ratio)</p>
+                                <p className="font-mono text-[11px] mt-1.5 text-purple-300">IL = (2 * √r) / (1 + r) - 1</p>
+                                <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                              </div>
+                            </div>
+                          </div>
+                          <p className="text-2xl font-bold text-red-500">{calculateIL().ilPct}%</p>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-xs text-gray-500 mb-1">HODL Value ($1k Start)</p>
+                          <p className="text-lg font-semibold text-gray-900 dark:text-white">${calculateIL().hodl}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500 mb-1">LP Value</p>
+                          <p className="text-lg font-semibold text-gray-900 dark:text-white">${calculateIL().lp}</p>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-xs text-gray-500 mb-1">HODL Value ($1k Start)</p>
-                      <p className="text-lg font-semibold text-gray-900 dark:text-white">${calculateIL().hodl}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500 mb-1">LP Value</p>
-                      <p className="text-lg font-semibold text-gray-900 dark:text-white">${calculateIL().lp}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
           
           {/* Crypto ROI Calculator */}
-          <div className={`bg-white dark:bg-[#131722] rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm transition-all overflow-hidden ${activeTool === 'roi' ? 'ring-1 ring-green-500' : 'hover:border-green-500/50'}`}>
-            <div 
+          <motion.div layout className={`bg-white dark:bg-[#131722] rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm transition-all overflow-hidden ${activeTool === 'roi' ? 'ring-1 ring-green-500' : 'hover:border-green-500/50'}`}>
+            <motion.div layout="position"
               className="p-6 flex items-start gap-4 cursor-pointer"
               onClick={() => setActiveTool(activeTool === 'roi' ? null : 'roi')}
             >
@@ -318,43 +343,63 @@ export default function ToolsView({ coins, currency }) {
                 </h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Calculate your return on investment for historical crypto purchases.</p>
               </div>
-            </div>
+            </motion.div>
 
-            {activeTool === 'roi' && (
-              <div className="p-6 pt-0 border-t border-gray-100 dark:border-gray-800">
-                <div className="space-y-3 mb-4">
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1">Initial Investment ($)</label>
-                    <input type="number" value={roiInitial} onChange={e => setRoiInitial(e.target.value)} className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 outline-none focus:ring-1 focus:ring-green-500" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs text-gray-500 mb-1">Buy Price ($)</label>
-                      <input type="number" value={roiBuyPrice} onChange={e => setRoiBuyPrice(e.target.value)} className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 outline-none focus:ring-1 focus:ring-green-500" />
+            <AnimatePresence initial={false}>
+              {activeTool === 'roi' && (
+                <motion.div 
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="overflow-hidden"
+                >
+                  <div className="p-6 pt-0 border-t border-gray-100 dark:border-gray-800">
+                    <div className="space-y-3 mb-4">
+                      <div>
+                        <label className="block text-xs text-gray-500 mb-1">Initial Investment ($)</label>
+                        <input type="number" value={roiInitial} onChange={e => setRoiInitial(e.target.value)} className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 outline-none focus:ring-1 focus:ring-green-500" />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">Buy Price ($)</label>
+                          <input type="number" value={roiBuyPrice} onChange={e => setRoiBuyPrice(e.target.value)} className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 outline-none focus:ring-1 focus:ring-green-500" />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">Sell Price ($)</label>
+                          <input type="number" value={roiSellPrice} onChange={e => setRoiSellPrice(e.target.value)} className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 outline-none focus:ring-1 focus:ring-green-500" />
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <label className="block text-xs text-gray-500 mb-1">Sell Price ($)</label>
-                      <input type="number" value={roiSellPrice} onChange={e => setRoiSellPrice(e.target.value)} className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 outline-none focus:ring-1 focus:ring-green-500" />
+                    <div className="bg-green-50 dark:bg-green-900/10 p-4 rounded-lg border border-green-100 dark:border-green-900/30 flex justify-between items-center">
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <p className="text-sm text-green-600 dark:text-green-400 font-medium">Return (%)</p>
+                          <div className="group relative">
+                            <Info className="w-4 h-4 text-green-400 cursor-help" />
+                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-3 bg-gray-900 text-white text-xs rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 pointer-events-none">
+                              <p className="font-semibold mb-2 border-b border-gray-700 pb-1">How calculated?</p>
+                              <p className="font-mono text-[11px] text-green-300">ROI = (Sell - Buy) / Buy * 100</p>
+                              <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                            </div>
+                          </div>
+                        </div>
+                        <p className={`text-xl font-bold ${calculateROI().rawPct >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-500'}`}>{calculateROI().pct}%</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm text-green-600 dark:text-green-400 font-medium mb-1">Final Value</p>
+                        <p className="text-xl font-bold text-gray-900 dark:text-white">${calculateROI().val}</p>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className="bg-green-50 dark:bg-green-900/10 p-4 rounded-lg border border-green-100 dark:border-green-900/30 flex justify-between items-center">
-                  <div>
-                    <p className="text-sm text-green-600 dark:text-green-400 font-medium mb-1">Return (%)</p>
-                    <p className={`text-xl font-bold ${calculateROI().rawPct >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-500'}`}>{calculateROI().pct}%</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm text-green-600 dark:text-green-400 font-medium mb-1">Final Value</p>
-                    <p className="text-xl font-bold text-gray-900 dark:text-white">${calculateROI().val}</p>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
 
           {/* Tax Estimator */}
-          <div className={`bg-white dark:bg-[#131722] rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm transition-all overflow-hidden ${activeTool === 'tax' ? 'ring-1 ring-red-500' : 'hover:border-red-500/50'}`}>
-            <div 
+          <motion.div layout className={`bg-white dark:bg-[#131722] rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm transition-all overflow-hidden ${activeTool === 'tax' ? 'ring-1 ring-red-500' : 'hover:border-red-500/50'}`}>
+            <motion.div layout="position"
               className="p-6 flex items-start gap-4 cursor-pointer"
               onClick={() => setActiveTool(activeTool === 'tax' ? null : 'tax')}
             >
@@ -368,53 +413,77 @@ export default function ToolsView({ coins, currency }) {
                 </h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Get a quick estimate of your capital gains tax liability.</p>
               </div>
-            </div>
+            </motion.div>
 
-            {activeTool === 'tax' && (
-              <div className="p-6 pt-0 border-t border-gray-100 dark:border-gray-800">
-                <div className="space-y-3 mb-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs text-gray-500 mb-1">Purchase Amount ($)</label>
-                      <input type="number" value={taxBuyAmount} onChange={e => setTaxBuyAmount(e.target.value)} className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 outline-none focus:ring-1 focus:ring-red-500" />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-gray-500 mb-1">Sale Amount ($)</label>
-                      <input type="number" value={taxSellAmount} onChange={e => setTaxSellAmount(e.target.value)} className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 outline-none focus:ring-1 focus:ring-red-500" />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs text-gray-500 mb-1">Country Rules</label>
-                      <select value={taxCountry} onChange={e => setTaxCountry(e.target.value)} className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 outline-none focus:ring-1 focus:ring-red-500">
-                        <option value="US">US / Custom</option>
-                        <option value="IN">India (30% + TDS)</option>
-                      </select>
-                    </div>
-                    {taxCountry !== "IN" && (
-                      <div>
-                        <label className="block text-xs text-gray-500 mb-1">Tax Rate (%)</label>
-                        <input type="number" value={taxRate} onChange={e => setTaxRate(e.target.value)} className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 outline-none focus:ring-1 focus:ring-red-500" />
+            <AnimatePresence initial={false}>
+              {activeTool === 'tax' && (
+                <motion.div 
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="overflow-hidden"
+                >
+                  <div className="p-6 pt-0 border-t border-gray-100 dark:border-gray-800">
+                    <div className="space-y-3 mb-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">Purchase Amount ($)</label>
+                          <input type="number" value={taxBuyAmount} onChange={e => setTaxBuyAmount(e.target.value)} className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 outline-none focus:ring-1 focus:ring-red-500" />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">Sale Amount ($)</label>
+                          <input type="number" value={taxSellAmount} onChange={e => setTaxSellAmount(e.target.value)} className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 outline-none focus:ring-1 focus:ring-red-500" />
+                        </div>
                       </div>
-                    )}
-                  </div>
-                </div>
-                <div className="bg-red-50 dark:bg-red-900/10 p-4 rounded-lg border border-red-100 dark:border-red-900/30">
-                  <div className="flex justify-between items-center mb-2">
-                    <div>
-                      <p className="text-sm text-red-600 dark:text-red-400 font-medium mb-1">Net Profit</p>
-                      <p className="text-xl font-bold text-gray-900 dark:text-white">${calculateTax().profit}</p>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">Country Rules</label>
+                          <select value={taxCountry} onChange={e => setTaxCountry(e.target.value)} className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 outline-none focus:ring-1 focus:ring-red-500">
+                            <option value="US">US / Custom</option>
+                            <option value="IN">India (30% + TDS)</option>
+                          </select>
+                        </div>
+                        {taxCountry !== "IN" && (
+                          <div>
+                            <label className="block text-xs text-gray-500 mb-1">Tax Rate (%)</label>
+                            <input type="number" value={taxRate} onChange={e => setTaxRate(e.target.value)} className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 outline-none focus:ring-1 focus:ring-red-500" />
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm text-red-600 dark:text-red-400 font-medium mb-1">Estimated Tax</p>
-                      <p className="text-xl font-bold text-red-600 dark:text-red-400">${calculateTax().tax}</p>
+                    <div className="bg-red-50 dark:bg-red-900/10 p-4 rounded-lg border border-red-100 dark:border-red-900/30">
+                      <div className="flex justify-between items-start mb-4 pb-4 border-b border-red-200/50 dark:border-red-800/50">
+                        <div>
+                          <p className="text-sm text-red-600 dark:text-red-400 font-medium mb-1">Gross Profit</p>
+                          <p className="text-xl font-bold text-gray-700 dark:text-gray-300">${calculateTax().profit}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm text-red-600 dark:text-red-400 font-medium mb-1">Estimated Tax</p>
+                          <p className="text-xl font-bold text-red-600 dark:text-red-400">-${calculateTax().tax}</p>
+                        </div>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm text-green-600 dark:text-green-400 font-bold">Net Profit</p>
+                          <div className="group relative">
+                            <Info className="w-4 h-4 text-green-500 cursor-help" />
+                            <div className="absolute bottom-full left-0 mb-2 w-48 p-3 bg-gray-900 text-white text-xs rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 pointer-events-none">
+                              <p className="font-semibold mb-2 border-b border-gray-700 pb-1">How calculated?</p>
+                              <p className="font-mono text-[11px] text-green-300">Net = Gross Profit - Tax</p>
+                              <div className="absolute top-full left-4 border-4 border-transparent border-t-gray-900"></div>
+                            </div>
+                          </div>
+                        </div>
+                        <p className="text-2xl font-bold text-green-500">${calculateTax().netProfit}</p>
+                      </div>
+                      <p className="text-xs text-red-500/70 text-right mt-3">{calculateTax().breakdown}</p>
                     </div>
                   </div>
-                  <p className="text-xs text-red-500/70 text-right">{calculateTax().breakdown}</p>
-                </div>
-              </div>
-            )}
-          </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
 
         </div>
       </div>

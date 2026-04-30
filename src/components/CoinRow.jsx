@@ -1,5 +1,6 @@
 import { Star } from "lucide-react";
 import { formatMarketCap, getCurrencySymbol } from "../utils/formatters";
+import { motion } from "framer-motion";
 
 const CoinSparkline = ({ data, isPositive }) => {
   if (!data || data.length === 0) return <div className="w-24 h-10 mx-auto"></div>;
@@ -51,12 +52,18 @@ export default function CoinRow({ coin, index, currentPage, itemsPerPage, select
   );
 
   return (
-    <tr
+    <motion.tr
+      layout="position"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      transition={{ duration: 0.3, delay: (index % itemsPerPage) * 0.03 }}
+      whileHover={{ scale: 1.01, backgroundColor: "var(--hover-bg, rgba(0,0,0,0.02))" }}
       onClick={() => setSelectedCoin(coin)}
-      className={`border-t border-gray-100 dark:border-gray-700 cursor-pointer transition-all duration-200 ${
+      className={`border-t border-gray-100 dark:border-gray-800/50 cursor-pointer transition-colors duration-200 ${
         selectedCoin?.id === coin.id
-          ? "bg-gray-200 dark:bg-gray-700"
-          : "hover:bg-gray-50 dark:hover:bg-gray-700/70"
+          ? "bg-blue-50/50 dark:bg-blue-900/20"
+          : "hover:bg-gray-50 dark:hover:bg-gray-800/50"
       }`}
     >
       <td className="p-3">
@@ -106,6 +113,6 @@ export default function CoinRow({ coin, index, currentPage, itemsPerPage, select
       <td className="p-3 text-right whitespace-nowrap">
         <CoinSparkline data={sparklineData} isPositive={change7d >= 0} />
       </td>
-    </tr>
+    </motion.tr>
   );
 }

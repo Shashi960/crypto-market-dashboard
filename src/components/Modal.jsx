@@ -3,6 +3,7 @@ import { formatMarketCap, getCurrencySymbol } from "../utils/formatters";
 import { LineChart, Line, ResponsiveContainer, YAxis, XAxis, Tooltip } from "recharts";
 import { useState, useEffect } from "react";
 import { fetchCoinChart } from "../services/api";
+import { AnimatePresence, motion } from "framer-motion";
 
 const CustomTooltip = ({ active, payload, label, currency }) => {
   if (active && payload && payload.length) {
@@ -53,24 +54,34 @@ export default function Modal({ selectedCoin, setSelectedCoin, currency = "USD" 
     return () => { isMounted = false; };
   }, [selectedCoin, days, currency]);
 
-  if (!selectedCoin) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center sm:p-6 z-[100]">
-      <div 
-        className="absolute inset-0 bg-gray-900/80 backdrop-blur-sm transition-opacity"
-        onClick={() => setSelectedCoin(null)} 
-      />
-      
-      <div className="relative w-full h-full sm:h-auto max-w-2xl sm:max-h-[90vh] overflow-y-auto overflow-x-hidden bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-2xl rounded-t-2xl sm:rounded-2xl mt-auto sm:mt-0 border border-gray-200 dark:border-gray-700 animate-in fade-in sm:zoom-in slide-in-from-bottom-4 sm:slide-in-from-bottom-0 duration-200">
-        <button
-          onClick={() => setSelectedCoin(null)}
-          className="absolute z-10 top-3 right-3 sm:top-4 sm:right-4 p-2 rounded-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors focus:outline-none"
-        >
-          <X className="w-5 h-5 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors" />
-        </button>
+    <AnimatePresence>
+      {selectedCoin && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center sm:p-6 z-[100]">
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="absolute inset-0 bg-gray-900/80 backdrop-blur-sm"
+            onClick={() => setSelectedCoin(null)} 
+          />
+          
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className="relative w-full h-full sm:h-auto max-w-2xl sm:max-h-[90vh] overflow-y-auto overflow-x-hidden bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-2xl rounded-t-2xl sm:rounded-2xl mt-auto sm:mt-0 border border-gray-200 dark:border-gray-700"
+          >
+            <button
+              onClick={() => setSelectedCoin(null)}
+              className="absolute z-10 top-3 right-3 sm:top-4 sm:right-4 p-2 rounded-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors focus:outline-none"
+            >
+              <X className="w-5 h-5 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors" />
+            </button>
 
-        <div className="p-6 sm:p-8">
+            <div className="p-6 sm:p-8">
           <div className="flex items-center gap-4 mb-8">
             <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700/50 p-2 border border-gray-200 dark:border-gray-600 shadow-inner">
               <img src={selectedCoin.image} alt={selectedCoin.name} className="w-full h-full object-contain" />
@@ -199,8 +210,10 @@ export default function Modal({ selectedCoin, setSelectedCoin, currency = "USD" 
               </div>
             </div>
           </div>
-        </div>
+          </div>
+        </motion.div>
       </div>
-    </div>
+      )}
+    </AnimatePresence>
   );
 }

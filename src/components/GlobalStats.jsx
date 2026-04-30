@@ -1,5 +1,6 @@
 import { Globe, BarChart3, PieChart } from "lucide-react";
 import { getCurrencySymbol } from "../utils/formatters";
+import { motion } from "framer-motion";
 
 const ActiveCoinsLogo = () => (
   <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-10 h-10 -ml-1">
@@ -25,15 +26,35 @@ const ActiveCoinsLogo = () => (
   </svg>
 );
 
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.4 } }
+};
+
 export default function GlobalStats({ globalData, currency = "USD" }) {
   const sym = getCurrencySymbol(currency);
   const mcap = globalData ? globalData.total_market_cap?.[currency.toLowerCase()] : 2680000000000;
   const vol = globalData ? globalData.total_volume?.[currency.toLowerCase()] : 74280000000;
   
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 pb-8 mb-8 border-b border-gray-200 dark:border-gray-800">
+    <motion.div 
+      variants={container}
+      initial="hidden"
+      animate="show"
+      className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 pb-8 mb-8 border-b border-gray-200 dark:border-gray-800"
+    >
       {/* Total Market Cap */}
-      <div className="bg-white dark:bg-[#131722] p-5 md:p-6 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col justify-between hover:border-blue-500/50 transition-all group">
+      <motion.div variants={item} className="bg-white dark:bg-[#131722] p-5 md:p-6 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col justify-between hover:border-blue-400 dark:hover:border-gray-700 transition-all group">
         <div className="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-500 mb-4 relative transition-transform group-hover:scale-110">
           <Globe className="w-6 h-6" />
           <div className="absolute -top-1 -right-1 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center text-white text-[10px] font-bold shadow-sm">
@@ -45,10 +66,10 @@ export default function GlobalStats({ globalData, currency = "USD" }) {
           <p className="font-semibold text-gray-900 dark:text-white mb-0.5">Total market cap</p>
           <p className="text-sm text-gray-500 dark:text-gray-400">Global value</p>
         </div>
-      </div>
+      </motion.div>
 
       {/* 24H Volume */}
-      <div className="bg-white dark:bg-[#131722] p-5 md:p-6 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col justify-between hover:border-green-500/50 transition-all group">
+      <motion.div variants={item} className="bg-white dark:bg-[#131722] p-5 md:p-6 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col justify-between hover:border-green-400 dark:hover:border-gray-700 transition-all group">
         <div className="w-12 h-12 rounded-full bg-green-50 dark:bg-green-500/10 flex items-center justify-center text-green-500 mb-4 relative transition-transform group-hover:scale-110">
           <BarChart3 className="w-6 h-6" />
           <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center text-white">
@@ -60,10 +81,10 @@ export default function GlobalStats({ globalData, currency = "USD" }) {
           <p className="font-semibold text-gray-900 dark:text-white mb-0.5">24H volume</p>
           <p className="text-sm text-gray-500 dark:text-gray-400">Trading activity</p>
         </div>
-      </div>
+      </motion.div>
 
       {/* BTC Dominance */}
-      <div className="bg-white dark:bg-[#131722] p-5 md:p-6 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col justify-between hover:border-yellow-500/50 transition-all group">
+      <motion.div variants={item} className="bg-white dark:bg-[#131722] p-5 md:p-6 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col justify-between hover:border-orange-400 dark:hover:border-gray-700 transition-all group">
         <div className="w-12 h-12 rounded-full bg-yellow-50 dark:bg-yellow-500/10 flex items-center justify-center text-yellow-500 mb-4 relative transition-transform group-hover:scale-110">
           <PieChart className="w-6 h-6" />
         </div>
@@ -74,10 +95,10 @@ export default function GlobalStats({ globalData, currency = "USD" }) {
           <p className="font-semibold text-gray-900 dark:text-white mb-0.5">BTC dominance</p>
           <p className="text-sm text-gray-500 dark:text-gray-400">ETH {globalData ? globalData.market_cap_percentage?.eth?.toFixed(1) + '%' : '10.5%'}</p>
         </div>
-      </div>
+      </motion.div>
 
       {/* Active Coins */}
-      <div className="bg-white dark:bg-[#131722] p-5 md:p-6 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col justify-between hover:border-purple-500/50 transition-all group">
+      <motion.div variants={item} className="bg-white dark:bg-[#131722] p-5 md:p-6 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col justify-between hover:border-purple-400 dark:hover:border-gray-700 transition-all group">
         <div className="w-12 h-12 rounded-full bg-purple-50 dark:bg-purple-500/10 flex items-center justify-center text-purple-500 mb-4 relative transition-transform group-hover:scale-110">
           <ActiveCoinsLogo />
           <div className="absolute -top-1 -right-1 w-3 h-3 bg-purple-400 rounded-full border-2 border-white dark:border-[#131722]"></div>
@@ -89,7 +110,7 @@ export default function GlobalStats({ globalData, currency = "USD" }) {
           <p className="font-semibold text-gray-900 dark:text-white mb-0.5">Active coins</p>
           <p className="text-sm text-gray-500 dark:text-gray-400">Live assets</p>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

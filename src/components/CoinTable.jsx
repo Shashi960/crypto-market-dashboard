@@ -1,4 +1,5 @@
 import { ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { AnimatePresence } from "framer-motion";
 import CoinRow from "./CoinRow";
 
 const SortHeader = ({ label, sortKey, align = "left", sortConfig, handleSort }) => {
@@ -48,7 +49,7 @@ export default function CoinTable({
 
   return (
     <div className="bg-white dark:bg-[#131722] rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800">
-      <div className="overflow-x-auto overflow-y-auto max-h-[65vh]">
+      <div className="overflow-x-auto overflow-y-auto h-[75vh] min-h-[600px]">
         <table className="w-full relative">
           <thead className="bg-gray-50 dark:bg-[#1A1F2E] border-b border-gray-200 dark:border-gray-800 sticky top-0 z-20 shadow-sm backdrop-blur">
             <tr className="text-left text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold">
@@ -63,20 +64,22 @@ export default function CoinTable({
             </tr>
           </thead>
           <tbody>
-            {paginatedCoins.map((coin, index) => (
-              <CoinRow 
-                key={coin.id}
-                coin={coin}
-                index={index}
-                currentPage={currentPage}
-                itemsPerPage={itemsPerPage}
-                selectedCoin={selectedCoin}
-                setSelectedCoin={setSelectedCoin}
-                isFavorite={favorites.includes(coin.id)}
-                toggleFavorite={toggleFavorite}
-                currency={currency}
-              />
-            ))}
+            <AnimatePresence mode="popLayout">
+              {paginatedCoins.map((coin, index) => (
+                <CoinRow 
+                  key={coin.id}
+                  coin={coin}
+                  index={index}
+                  currentPage={currentPage}
+                  itemsPerPage={itemsPerPage}
+                  selectedCoin={selectedCoin}
+                  setSelectedCoin={setSelectedCoin}
+                  isFavorite={favorites.includes(coin.id)}
+                  toggleFavorite={toggleFavorite}
+                  currency={currency}
+                />
+              ))}
+            </AnimatePresence>
           </tbody>
         </table>
       </div>

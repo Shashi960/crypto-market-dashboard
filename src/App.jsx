@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { fetchCoins, fetchGlobalStats, fetchTrendingMarketData } from "./services/api";
 import { History, Link2 } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 
 import Header from "./components/Header";
 import GlobalStats from "./components/GlobalStats";
@@ -223,50 +224,66 @@ function App() {
             </div>
           )}
 
-          {currentTab === "tools" ? (
-            <ToolsView coins={coins} currency={currency} />
-          ) : (
-            <>
-              {currentTab === "market" && (
-                <GlobalStats globalData={globalData} currency={currency} />
-              )}
+          <AnimatePresence mode="wait">
+            {currentTab === "tools" ? (
+              <motion.div
+                key="tools"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                transition={{ duration: 0.3 }}
+              >
+                <ToolsView coins={coins} currency={currency} />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="dashboard"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                transition={{ duration: 0.3 }}
+              >
+                {currentTab === "market" && (
+                  <GlobalStats globalData={globalData} currency={currency} />
+                )}
 
-              <SearchBar 
-                search={search} 
-                setSearch={setSearch} 
-                timeUntilUpdate={timeUntilUpdate} 
-                onRefresh={() => getData(true)} 
-              />
+                <SearchBar 
+                  search={search} 
+                  setSearch={setSearch} 
+                  timeUntilUpdate={timeUntilUpdate} 
+                  onRefresh={() => getData(true)} 
+                />
 
-              <div className="mb-6">
-                <h2 className="text-2xl font-bold mb-1">
-                  {currentTab === "watchlist" ? "Your Watchlist" : currentTab === "trending" ? "Trending Coins" : "Market Overview"}
-                </h2>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {currentTab === "watchlist" 
-                    ? "Cryptocurrencies you are tracking" 
-                    : currentTab === "trending" ? "Top cryptocurrencies gaining momentum" : "Top cryptocurrencies by market capitalization"}
-                </p>
-              </div>
+                <div className="mb-6">
+                  <h2 className="text-2xl font-bold mb-1">
+                    {currentTab === "watchlist" ? "Your Watchlist" : currentTab === "trending" ? "Trending Coins" : "Market Overview"}
+                  </h2>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    {currentTab === "watchlist" 
+                      ? "Cryptocurrencies you are tracking" 
+                      : currentTab === "trending" ? "Top cryptocurrencies gaining momentum" : "Top cryptocurrencies by market capitalization"}
+                  </p>
+                </div>
 
-              <CoinTable 
-                paginatedCoins={paginatedCoins}
-                sortConfig={sortConfig}
-                handleSort={handleSort}
-                currentPage={currentPage}
-                setCurrentPage={setCurrentPage}
-                totalPages={totalPages}
-                totalCoins={sortedCoins.length}
-                itemsPerPage={itemsPerPage}
-                setItemsPerPage={setItemsPerPage}
-                selectedCoin={selectedCoin}
-                setSelectedCoin={setSelectedCoin}
-                favorites={favorites}
-                toggleFavorite={toggleFavorite}
-                currency={currency}
-              />
-            </>
-          )}
+                <CoinTable 
+                  paginatedCoins={paginatedCoins}
+                  sortConfig={sortConfig}
+                  handleSort={handleSort}
+                  currentPage={currentPage}
+                  setCurrentPage={setCurrentPage}
+                  totalPages={totalPages}
+                  totalCoins={sortedCoins.length}
+                  itemsPerPage={itemsPerPage}
+                  setItemsPerPage={setItemsPerPage}
+                  selectedCoin={selectedCoin}
+                  setSelectedCoin={setSelectedCoin}
+                  favorites={favorites}
+                  toggleFavorite={toggleFavorite}
+                  currency={currency}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </main>
 
         <footer className="w-full py-6 text-center border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-[#0B0E14]">
